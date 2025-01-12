@@ -144,7 +144,7 @@ func handleZipRequest(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, "Ошибка при добавлении данных в базу", http.StatusInternalServerError)
 					return
 				}
-				log.Printf("Добавлена запись: %s, %s, %.2f", name, category, price)
+				log.Printf("Добавлена запись: %s, %s, %.2f", name, category, priceValue)
 
 				// Обновляем счетчики
 				totalItems++
