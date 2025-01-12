@@ -82,7 +82,6 @@ func handleZipRequest(w http.ResponseWriter, r *http.Request) {
 	for _, zipFile := range archive.File {
 		// Проверяем, что файл имеет расширение .csv
 		if strings.HasSuffix(zipFile.Name, ".csv") {
-			// Открываем файл
 			zipFileReader, err := zipFile.Open()
 			if err != nil {
 				http.Error(w, "Ошибка при открытии файла из архива", http.StatusInternalServerError)
