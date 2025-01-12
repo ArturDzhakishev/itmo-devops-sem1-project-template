@@ -14,15 +14,11 @@ DB_PORT="5432"
 
 export PGPASSWORD="$DB_PASSWORD"
 # Создаем базу данных
-#psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -c "DROP DATABASE IF EXISTS $DB_NAME;"
-#psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -c "CREATE DATABASE $DB_NAME;"
-psql -U "validator" -h "localhost" -p "5432" -c "DROP DATABASE IF EXISTS project-sem-1;"
-psql -U "validator" -h "localhost" -p "5432" -c "CREATE DATABASE project-sem-1;"
-
+psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME;"
+psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -d postgres -c "CREATE DATABASE $DB_NAME;"
 
 # Создаем таблицу
-#psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -d "$DB_NAME" -c "
-psql -U "validator" -h "localhost" -p "5432" -d "project-sem-1" -c "
+psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -d "$DB_NAME" -c "
 CREATE TABLE IF NOT EXISTS prices (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
