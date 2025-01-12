@@ -43,7 +43,7 @@ func initDB() {
 		log.Fatalf("Ошибка проверки соединения: %v", err)
 	}
 
-	//fmt.Println("Успешное подключение к базе данных!")
+	fmt.Println("Успешное подключение к базе данных!")
 }
 
 func pricesHandler(w http.ResponseWriter, r *http.Request) {
@@ -243,6 +243,6 @@ func main() {
 
 	http.HandleFunc("/api/v0/prices", pricesHandler)
 
-	//fmt.Println("Сервер запущен на http://localhost:8080")
+	fmt.Println("Сервер запущен на http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
