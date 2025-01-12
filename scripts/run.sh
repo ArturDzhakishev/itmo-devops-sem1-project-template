@@ -19,4 +19,13 @@ export DB_PASSWORD
 export DB_HOST
 export DB_PORT
 
-./app
+./app &
+app_pid=$!
+
+# Ожидаем, пока сервер запустится (проверка доступности)
+until curl -s http://localhost:8080; do
+    echo "Ожидание запуска сервера..."
+    sleep 2
+done
+
+echo "Сервер запущен, продолжаем выполнение тестов."
