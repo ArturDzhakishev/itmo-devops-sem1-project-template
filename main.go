@@ -43,7 +43,7 @@ func initDB() {
 		log.Fatalf("Ошибка проверки соединения: %v", err)
 	}
 
-	fmt.Println("Успешное подключение к базе данных!")
+	//fmt.Println("Успешное подключение к базе данных!")
 }
 
 func pricesHandler(w http.ResponseWriter, r *http.Request) {
@@ -204,7 +204,7 @@ func getPricesHandler(w http.ResponseWriter, r *http.Request) {
 	// Запись заголовков CSV
 	writer.Write([]string{"Name", "Category", "Price"})
 
-	log.Println("Извлечение данных из базы начато")
+	//log.Println("Извлечение данных из базы начато")
 
 	for rows.Next() {
 		var name, category string
@@ -214,7 +214,7 @@ func getPricesHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Ошибка обработки строки", http.StatusInternalServerError)
 			return
 		}
-		log.Printf("Извлечена запись: %s, %s, %.2f", name, category, price)
+		//log.Printf("Извлечена запись: %s, %s, %.2f", name, category, price)
 		writer.Write([]string{name, category, strconv.FormatFloat(price, 'f', 2, 64)})
 	}
 
@@ -242,6 +242,6 @@ func main() {
 
 	http.HandleFunc("/api/v0/prices", pricesHandler)
 
-	fmt.Println("Сервер запущен на http://localhost:8080")
+	//fmt.Println("Сервер запущен на http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
