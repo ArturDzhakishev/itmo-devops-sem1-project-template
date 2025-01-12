@@ -12,6 +12,7 @@ DB_PASSWORD="val1dat0r"
 DB_HOST="localhost"
 DB_PORT="5432"
 
+export PGPASSWORD="$DB_PASSWORD"
 # Создаем базу данных
 psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -c "DROP DATABASE IF EXISTS $DB_NAME;"
 psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -c "CREATE DATABASE $DB_NAME;"
