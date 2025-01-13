@@ -55,18 +55,12 @@ check_api_simple() {
     
     # Проверка POST /api/v0/prices
     echo "Тестирование POST /api/v0/prices"
-    echo "Отправка файла: $TEST_ZIP"
-    echo "Путь к файлу: $(realpath $TEST_ZIP)"
     response=$(curl -s -F "file=@$TEST_ZIP" "${API_HOST}/api/v0/prices")
-    echo "Ответ от сервера:"
-    echo "$response"
     if [[ $response == *"total_items"* && $response == *"total_categories"* && $response == *"total_price"* ]]; then
         echo -e "${GREEN}✓ POST запрос успешен${NC}"
         
     else
         echo -e "${RED}✗ POST запрос неуспешен${NC}"
-        echo "Полученный ответ не содержит ожидаемых данных. Ответ сервера:"
-        echo "$response"
         return 1
     fi
     
@@ -362,4 +356,4 @@ if [ $# -ne 1 ] || ! [[ $1 =~ ^[1-3]$ ]]; then
     exit 1
 fi
 
-main "$1"
+main "1"
