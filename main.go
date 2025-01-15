@@ -73,10 +73,27 @@ func handleZipRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Инициализация счетчиков
-	var totalItems, totalCategories int
-	var totalPrice float64
-	categorySet := make(map[string]bool)
+	// Создаем транзакцию
+	tx, err := db.Begin()
+	if err != nil {
+		http.Error(w, "Ошибка при создании транзакции", http.StatusInternalServerError)
+		return
+	}
+
+	// Закрываем транзакцию по выходу из функции
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+	query := `INSERT INTO prices (id, name, category, price, created_at) 
+			VALUES ($1, $2, $3, $4, $5) 
+			ON CONFLICT (id) DO NOTHING`
 
 	// Проходим по всем файлам в архиве
 	for _, zipFile := range archive.File {
@@ -134,27 +151,36 @@ func handleZipRequest(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				// Добавляем данные в базу данных
-				query := `INSERT INTO prices (id, name, category, price, created_at) 
-						VALUES ($1, $2, $3, $4, $5) 
-						ON CONFLICT (id) DO NOTHING`
 				_, err = db.Exec(query, id, name, category, priceValue, parsedDate)
 				if err != nil {
 					log.Printf("Ошибка преобразования цены: %v", err)
 					http.Error(w, "Ошибка при добавлении данных в базу", http.StatusInternalServerError)
 					return
 				}
-				log.Printf("Добавлена запись: %s, %s, %.2f", name, category, priceValue)
-
-				// Обновляем счетчики
-				totalItems++
-				if !categorySet[category] {
-					categorySet[category] = true
-					totalCategories++
-				}
-				totalPrice += priceValue
 			}
 		}
+	}
+	// Подсчет статистики
+	var totalItems int
+	var totalCategories int
+	var totalPrice float64
+
+	err = tx.QueryRow(`SELECT COUNT(*) FROM prices`).Scan(&totalItems)
+	if err != nil {
+		http.Error(w, "Ошибка при подсчете общего количества элементов", http.StatusInternalServerError)
+		return
+	}
+
+	err = tx.QueryRow(`SELECT COUNT(DISTINCT category) FROM prices`).Scan(&totalCategories)
+	if err != nil {
+		http.Error(w, "Ошибка при подсчете общего количества категорий", http.StatusInternalServerError)
+		return
+	}
+
+	err = tx.QueryRow(`SELECT COALESCE(SUM(price), 0) FROM prices`).Scan(&totalPrice)
+	if err != nil {
+		http.Error(w, "Ошибка при подсчете общей стоимости", http.StatusInternalServerError)
+		return
 	}
 
 	// Формируем ответ
