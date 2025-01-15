@@ -227,9 +227,14 @@ func getPricesHandler(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	// Запись заголовков CSV
-	writer.Write([]string{"ID", "Name", "Category", "Price", "Date"})
+	//writer.Write([]string{"ID", "Name", "Category", "Price", "Date"})
+	if err := writer.Write([]string{"ID", "Name", "Category", "Price", "Date"}); err != nil {
+		log.Printf("Ошибка записи заголовков в CSV: %v", err)
+		http.Error(w, "Ошибка записи заголовков", http.StatusInternalServerError)
+		return
+	}
 
-	//log.Println("Извлечение данных из базы начато")
+	var data [][]string
 
 	for rows.Next() {
 		var name, category string
@@ -241,16 +246,31 @@ func getPricesHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Ошибка обработки строки", http.StatusInternalServerError)
 			return
 		}
-		//log.Printf("Извлечена запись: %s, %s, %.2f", name, category, price)
-		writer.Write([]string{strconv.Itoa(id), name, category, strconv.FormatFloat(price, 'f', 2, 64), created_at.Format("2006-01-02")})
+		data = append(data, []string{
+			strconv.Itoa(id),
+			name,
+			category,
+			strconv.FormatFloat(price, 'f', 2, 64),
+			created_at.Format("2006-01-02"),
+		})
+	}
+
+	// Проверка ошибки из rows после завершения итерации
+	if err := rows.Err(); err != nil {
+		log.Printf("Ошибка при итерации строк: %v", err)
+		http.Error(w, "Ошибка чтения данных из базы", http.StatusInternalServerError)
+		return
+	}
+
+	for _, record := range data {
+		if err := writer.Write(record); err != nil {
+			log.Printf("Ошибка записи в CSV: %v", err)
+			http.Error(w, "Ошибка записи в CSV", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	writer.Flush()
-	if err := writer.Error(); err != nil {
-		log.Printf("Ошибка записи в CSV: %v", err)
-		http.Error(w, "Ошибка записи в CSV", http.StatusInternalServerError)
-		return
-	}
 
 	if err := zipWriter.Close(); err != nil {
 		http.Error(w, "Ошибка закрытия архива", http.StatusInternalServerError)
@@ -269,6 +289,6 @@ func main() {
 
 	http.HandleFunc("/api/v0/prices", pricesHandler)
 
-	fmt.Println("Сервер запущен на http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Сервер запущен на http://localhost:8080")
+	fmt.Fatal(http.ListenAndServe(":8080", nil))
 }
