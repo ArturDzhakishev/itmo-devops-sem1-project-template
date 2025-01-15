@@ -219,7 +219,7 @@ func getPricesHandler(w http.ResponseWriter, r *http.Request) {
 	defer writer.Flush()
 
 	// Запрос данных из базы данных
-	rows, err := db.Query(`SELECT name, category, price FROM prices`)
+	rows, err := db.Query(`SELECT id, name, category, price, created_at FROM prices`)
 	if err != nil {
 		http.Error(w, "Ошибка извлечения данных из базы", http.StatusInternalServerError)
 		return
@@ -227,20 +227,22 @@ func getPricesHandler(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	// Запись заголовков CSV
-	writer.Write([]string{"Name", "Category", "Price"})
+	writer.Write([]string{"ID", "Name", "Category", "Price", "Date"})
 
 	//log.Println("Извлечение данных из базы начато")
 
 	for rows.Next() {
 		var name, category string
 		var price float64
-		if err := rows.Scan(&name, &category, &price); err != nil {
+		var id int
+		var created_at time.Time
+		if err := rows.Scan(&id, &name, &category, &price, &created_at); err != nil {
 			log.Printf("Ошибка обработки строки: %v", err)
 			http.Error(w, "Ошибка обработки строки", http.StatusInternalServerError)
 			return
 		}
 		//log.Printf("Извлечена запись: %s, %s, %.2f", name, category, price)
-		writer.Write([]string{name, category, strconv.FormatFloat(price, 'f', 2, 64)})
+		writer.Write([]string{strconv.Itoa(id), name, category, strconv.FormatFloat(price, 'f', 2, 64), created_at.Format("2006-01-02")})
 	}
 
 	writer.Flush()
