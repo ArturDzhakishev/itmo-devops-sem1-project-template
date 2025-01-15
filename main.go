@@ -91,9 +91,9 @@ func handleZipRequest(w http.ResponseWriter, r *http.Request) {
 			err = tx.Commit()
 		}
 	}()
-	query := `INSERT INTO prices (id, name, category, price, created_at) 
-			VALUES ($1, $2, $3, $4, $5) 
-			ON CONFLICT (id) DO NOTHING`
+	query := `INSERT INTO prices (name, category, price, created_at) 
+			VALUES ($1, $2, $3, $4)`
+	//ON CONFLICT (id) DO NOTHING`
 
 	// Проходим по всем файлам в архиве
 	for _, zipFile := range archive.File {
@@ -130,7 +130,6 @@ func handleZipRequest(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				id := record[0]
 				name := record[1]
 				category := record[2]
 				price := record[3]
@@ -151,9 +150,8 @@ func handleZipRequest(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				_, err = db.Exec(query, id, name, category, priceValue, parsedDate)
+				_, err = db.Exec(query, name, category, priceValue, parsedDate)
 				if err != nil {
-					log.Printf("Ошибка преобразования цены: %v", err)
 					http.Error(w, "Ошибка при добавлении данных в базу", http.StatusInternalServerError)
 					return
 				}
