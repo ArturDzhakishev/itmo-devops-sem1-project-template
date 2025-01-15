@@ -289,6 +289,6 @@ func main() {
 
 	http.HandleFunc("/api/v0/prices", pricesHandler)
 
-	log.Println("Сервер запущен на http://localhost:8080")
-	fmt.Fatal(http.ListenAndServe(":8080", nil))
+	fmt.Println("Сервер запущен на http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
